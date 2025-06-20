@@ -1,0 +1,40 @@
+Package: qMut
+Title: Fast Bacterial SNP Data Integration and Analysis
+Version: 0.0.0.9000
+Authors@R: 
+    person("Hongxiang", "Xu", , "rubick@email.swu.edu.cn", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-1388-5218"))
+Description: This package is designed for fast integration of SNP data identified by WGS
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE, r6 = TRUE)
+RoxygenNote: 7.3.1
+URL: https://github.com/HongxiangXu/qMut, https://hongxiangxu.github.io/qMut/
+BugReports: https://github.com/HongxiangXu/qMut/issues
+Depends: 
+    data.table,
+    furrr,
+    dplyr,
+    Matrix,
+    pbapply,
+    magrittr,
+    R (>= 3.50),
+    stringi,
+    purrr,
+    ggplot2,
+    R6,
+    qs,
+    viridis,
+    ggnewscale,
+    ggrepel,
+    ggtree,
+    ape,
+    cowplot,
+    tibble,
+    future,
+    ggimage
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
