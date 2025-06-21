@@ -1,5 +1,5 @@
 <div align="left">
-  <img src="inst/logo/qMut_logo.png" alt="qMut Logo" width="475" height="200" style="vertical-align: middle; margin-right: 20px;" />
+  <img src="inst/logo/qMut_logo.png" alt="qMut Logo" width="237" height="100" style="vertical-align: middle; margin-right: 20px;" />
   <h1 style="display: inline;"></h1>
 </div>
 
