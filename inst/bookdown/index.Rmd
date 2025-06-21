@@ -26,27 +26,26 @@ With the widespread application of whole-genome sequencing (WGS) technologies, g
 
 Here we developed **qMut**, the R package designed for storage and rapid analysis of pathogenic bacterial mutations. This tutorial demonstrates its functionality using mutation data from more than 50000 *Mycobacterium tuberculosis* genomes.
 
-# **Installation**
-
+# **Install and Loading package**
+It is easy to install **qMut** from github:
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Install from GitHub
-# devtools::install_github("username/qMut")
+# devtools::install_github("HongxiangXu/qMut")
 
 # Load required packages
-library(qMut)
+library(qMut)        # our package
+library(qs)          # read and save data faster
+library(data.table)  
+library(tidyverse)   
+
 ```
 
 # Data Integration
 
 ## Input Requirements
 
-The package accepts mutation data in either CSV (from snippy) or standard VCF format. A minimal input should contain these columns:
-
+The package accepts mutation data in either CSV format(produced by snippy) or standard VCF format. A minimal input should contain these columns:
 ```{r echo=T}
-library(qs)
-library(data.table)
-library(tidyverse)
-
 
 exp_data <- read.csv("example/snippy_data/snps.csv")
 
@@ -72,29 +71,33 @@ The `snp_file_list` contains mutation information identified by the snippy softw
 | `GENE`      | Gene name                          |
 | `PRODUCT`   | Protein product description        |
 
-Mutation matrices are typically represented as binary (0/1) indicators denoting presence/absence of mutations across samples. However, three key observations motivate our storage approach:
+Mutation matrices are typically represented as binary (0/1) indicators denoting absence/presence/ of mutations across samples. Three key observations motivate our storage approach:
 
-1.  **Sparsity**: Most mutations occur in only a few samples
-2.  **Annotation redundancy**: Many mutation types are identical across samples
-3.  **Scalability**: Whole-genome datasets can be extremely large
+1.  **Sparsity**: Most mutations occur in only a few samples.
+2.  **Annotation redundancy**: Many mutation types are identical across samples.
+3.  **Scalability**: Whole-genome datasets can be extremely large.
 
 We therefore decompose the data into two components:
 
-1.  **`snp_anno`**: Stores the union of all mutation annotations (shared across samples)
-2.  **`snp_data`**: Stores the sparse binary matrix of mutation occurrences
+1.  **snp_anno**: Stores the union of all mutation annotations (shared across samples)
+2.  **snp_data**: Stores the sparse binary matrix of mutation occurrences
 
 This decomposition provides significant advantages:
 
--   Reduced storage requirements (only unique annotations stored once)
+-   Reduced storage requirements (Each unique annotations stored once)
 -   Faster matrix operations on sparse data
 -   Efficient memory usage during analysis
 
 ```{r eval=FALSE, include=T}
+
+# Demo to provide snp files and sample names for integration and production of 
+# snp_anno and snp_data
+snp_file_list <- list.files("example",recursive =T, full.names = T)
 all_smp_name <- str_extract(snp_file_list,"(?<=snippy_data/)[^/]+")
 
 IntegrateData(
   file_path = snp_file_list,
-  smp_name = sample_names,
+  smp_name = all_smp_name,
   output_dir = "output",
   chunk_size = 1000,  # Process in chunks of 1000 samples to reduce memory usage
   nworkers = 4        # Parallel processing
@@ -108,25 +111,29 @@ For large-scale analyses (\>10,000 samples), we recommend processing in chunks (
 
 This approach has been tested with \>50,000 bacterial genomes while maintaining memory efficiency.
 
+Now, we directly use **snp_anno** and **snp_data** files produced by `IntegrateData` function to construct the SNPObject.
 ```{r echo=TRUE}
-
+# read in snp_anno, qread is from qs package
 snp_anno <- qread("example/snp_anno.qs",nthreads = 8)
 
-# edit Mtb gene names
+# edit Mtb gene names to make it more readable (optional). 
 snp_anno$LOCUS_TAG <- gsub("VBD_","v",snp_anno$LOCUS_TAG)
 snp_anno$GENE <- ifelse(str_detect(snp_anno$GENE,"RVBD_RS"),snp_anno$LOCUS_TAG,snp_anno$GENE)
 
 head(snp_anno)
 
+# read in snp_data
 snp_data <- qread("example/snp_data.qs",nthreads = 8)
 
+# snp_data is a large sparse matrix, with over 50000 rows(samples) and >700k 
+# non-redundant mutations.
 snp_data[1:6,1:6]
 ```
 
 ## Creating the SNP Object
 
 ```{r echo=TRUE}
-
+# Be careful! The first column of metadata must named as Sample_name.
 sample_info <- fread("example/sample_info.txt",data.table = F) %>%
   filter(ID %in% rownames(snp_data)) %>%
   dplyr::rename(Sample_name=ID) %>% 
@@ -136,21 +143,21 @@ head(sample_info)
 ```
 
 ```{r echo=TRUE}
-
+# Create the object
 Mtb_mut <- CreateSNPObj(snp_anno = snp_anno,
                         snp_data = snp_data,
                         metadata = sample_info,
-                        remove_genes_dt = "Mtb",
-                        verbose=T)
+                        remove_genes_dt = "Mtb", # remove genes for Mtb(including PE/PPE,phage seq,etc)
+                        verbose=T) # show the progress
 ```
 
-The qMut package utilizes R6 objects that contain multiple accessible attributes and methods for comprehensive mutation analysis.
+The qMut package utilizes R6 objects that contain multiple accessible attributes and methods for comprehensive mutation analysis; we will show them in next chapter.
 
 ## Merging Objects for Expanded Analysis
 
 When incorporating new samples, the MergeData() function enables seamless integration of multiple qMut objects.
 
-```{r eval=FALSE, include=FALSE}
+```{r eval=FALSE, include=T}
 obj_merged <- MergeData(list(obj_old,obj_new))
 ```
 
@@ -158,13 +165,12 @@ obj_merged <- MergeData(list(obj_old,obj_new))
 
 The `Mtb_mut` object serves as the primary data structure for all downstream analyses in our package. We provide pre-processed qs objects for several common bacterial species:
 
-```{r eval=FALSE, include=FALSE}
+```{r echo=TRUE, message=TRUE}
 # Load the pre-built Mycobacterium tuberculosis mutation object
-Mtb_mut <- qread("~/xhx/Mtb_AMR/resR_51229/MutationHunter/www/object/Mtb_mut_obj.qs")
+Mtb_mut <- qread("example/Mtb_mut_obj.qs")
 
 # We can see Mtb_mut S6 object contains a comprehensive set of attributes and methods designed for efficient mutation analysis.
 Mtb_mut
-
 ```
 
 ## Basic Mutation Statistics
@@ -178,17 +184,20 @@ head(all_mut)
 # Analyze mutations in Rv0324 (default: coding sequence only)
 Rv0324_mut <- Mtb_mut$estimate_imp("Rv0324", gene_type = "LOCUS_TAG")
 
+# Now you can see the total occurance time of each mutations in Rv0324 for the Mtb_mut
+
 head(Rv0324_mut)
 
-# Include 300bp upstream regulatory region
-Rv0324_mut <- Mtb_mut$estimate_imp(gene = "Rv0324",
-                                   gene_type = "LOCUS_TAG",
-                                   upstream_length = 300)
+## Include 300bp upstream regulatory region
+# Rv0324_mut <- Mtb_mut$estimate_imp(gene = "Rv0324",
+#                                    gene_type = "LOCUS_TAG",
+#                                    upstream_length = 300)
 
 ```
+You should keep in mind that this statistical result will dynamically update alongside changes in the object. For example, if you filter the dataset to isolate strains with specific drug-resistance mutations and generate a new object, the statistics will then reflect the mutation status of Rv0324 exclusively within those drug-resistant strains. 
 
-# katG Mutation Analysis (Isoniazid Resistance)
-
+## katG Mutation Analysis (Isoniazid Resistance)
+We will now demonstrate the basic usage of this object through a katG mutation analysis. This project begins by filtering Mycobacterium tuberculosis strains containing the classic isoniazid resistance mutation katG R463L. It then calculates lineage-specific differences in all katG mutations between R463L strains and wild-type (WT) strains. Additionally, we assess whether each mutation in embB (the ethambutol resistance gene) shows statistically significant differences in prevalence between R463L and WT strain group
 ```{r echo=TRUE}
 
 # Identify all katG mutations
@@ -233,19 +242,19 @@ mut_tree <- katG_R463L$MutTree(
 
 ```
 
-# Multi-omics Integration for Discovery of Non-neutral Mutations
+## Multi-omics Integration for Discovery of Non-neutral Mutations
 
-Post-Translational Modification (PTM) omics Analysis have identified many PTM sites in pathogens.
+Post-translational modification (PTM) omics analysis have identified many PTM sites in pathogens.
 
-Here we demonstrate the application of our package through acetylation proteomics (@xie2015acetylation) of Mtb conducted by our lab, as well as leveraging recently published O-phosphorylation proteomics data (@frando2023phosphorylation). We rapidly identify positively selected phosphorylation sites during evolution.
+Here, we demonstrate the utility of our package using acetylation proteomics data from Mycobacterium tuberculosis (Mtb) generated by our lab (@xie2015acetylation), combined with recently published O-phosphorylation proteomics data (@frando2023phosphorylation). This integrated approach enables rapid identification of evolutionarily positively selected phosphorylation sites.
 
 ```{r echo=TRUE}
-
-
 # The data file must contain at least two required columns: GENE/LOCUS_TAG and AA_POS (amino acid position)
 
 # Load experimentally validated phosphorylation sites
 pho_info <- read.csv("example/Mtb_pho.csv")
+
+head(pho_info)
 
 # Load experimentally validated acetylation sites
 ace_info <- read.csv("example/Mtb_ace.csv")
@@ -277,10 +286,13 @@ The MutNumPlot function enables visualization of mutation frequency distribution
 
 ```{r}
 # Visualize mutation frequency distributions
-# PTM sites (acetylation and phosphorylation) are highlighted with special colors
-Mtb_mut$MutNumPlot("Rv0001",Modification = c("Acetylation","Phosphorylation"))
+Mtb_mut$MutNumPlot("Rv0324",Modification = NULL)
 
-Mtb_mut$MutNumPlot("Rv0324",Modification = c("Acetylation","Phosphorylation"))
+# PTM sites (acetylation and phosphorylation) are highlighted with special colors
+Mtb_mut$MutNumPlot("Rv0324",Modification = c("Acetylation","Phosphorylation"),
+                   show_synomonous = T,  # show synomonous mutation
+                   limit = 5,            # minimun mutation counts to plot
+                   label_num = 15)       # label numbers of top mutation counts to show
 ```
 
-Importantly, we have experimentally demonstrated mutation of a phosphosite in Rv0324, T168A, partially rescued growth arrest during overexpression of *Rv0324* in *Mycobacterium semgmatis*, the vanguard of mycobacterial research. This result hightlight the practicality of this simple function.
+Critically, we experimentally validated that mutation of the phosphosite T168A in Rv0324 partially rescues growth arrest during *Rv0324* overexpression in *Mycobacterium semgmatis*—a cornerstone model organism in mycobacterial research. This finding underscores the practical utility of this straightforward functional approach.

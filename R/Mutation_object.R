@@ -11,11 +11,8 @@ print_message <- function(message,verbose){
   }
 }
 
-color_pool <- c("#1F78B4","#FF7F00","#E31A1C","#CAB2D6","#A6CEE3","#FB9A99",
-                "#33A02C","#cdc0b0","#B2DF8A","#0048ba","#7ac5cd",
-                "#8D4C6A","#377EB8","#419681","#4DAF4A","#727E76","#984EA3",
-                "#CB6651","#FFBF19","#FFFF33","#D2AA2D","#A65628","#CE6B73",
-                "#F781BF")
+
+
 #' @title The Mutation object for snp_data and snp_anno
 #' @description The Mutation object is created to apply all functions for mutation analysis
 #' @export
@@ -689,7 +686,12 @@ SNP <- R6Class(
                 plot.margin = margin(0,0,0,0))+
           scale_y_discrete(limit=order$AA_effect_short)+
           scale_fill_gradient(low = "#A6CEE3",high = "#4DAF4A")
-
+        
+        color_pool <- c("#1F78B4","#FF7F00","#E31A1C","#CAB2D6","#A6CEE3","#FB9A99",
+                        "#33A02C","#cdc0b0","#B2DF8A","#0048ba","#7ac5cd",
+                        "#8D4C6A","#377EB8","#419681","#4DAF4A","#727E76","#984EA3",
+                        "#CB6651","#FFBF19","#FFFF33","#D2AA2D","#A65628","#CE6B73",
+                        "#F781BF")
 
         if (!is.null(metadata_col)){
           p3 <-ggplot(data=plot_lineage,
@@ -825,7 +827,11 @@ SNP <- R6Class(
       }
 
       mut_dt <- plot_df(locus_tag,limit,label_num,Modification)
-
+      color_pool <- c("#1F78B4","#FF7F00","#E31A1C","#CAB2D6","#A6CEE3","#FB9A99",
+                      "#33A02C","#cdc0b0","#B2DF8A","#0048ba","#7ac5cd",
+                      "#8D4C6A","#377EB8","#419681","#4DAF4A","#727E76","#984EA3",
+                      "#CB6651","#FFBF19","#FFFF33","#D2AA2D","#A65628","#CE6B73",
+                      "#F781BF")
       ggplot(mut_dt,aes(x=Codon_Pos,y=Times))+
         geom_point(data=mut_dt %>% filter(!modification %in% Modification),
                    mapping=aes(x=Codon_Pos,y=Times,color=log10(Times)),
