@@ -285,7 +285,7 @@ Mtb_mut$snp_list$snp_anno %>% filter(Phosphorylation==T) %>% head()
 
 The MutNumPlot function enables visualization of mutation frequency distribution for specific genes, with PTM sites highlighted. This visualization helps identify key mutations that may affect protein post-translational modifications.
 
-```{r}
+```{r echo=TRUE}
 # Visualize mutation frequency distributions
 Mtb_mut$MutNumPlot("Rv0324",Modification = NULL)
 
