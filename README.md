@@ -17,4 +17,4 @@ You can install the development version of `qMut` from GitHub using the `devtool
 install.packages("devtools")
 
 # Install the development version of qMut from GitHub
-devtools::install_github("yourusername/qMut")
+devtools::install_github("HongxiangXu/qMut")
