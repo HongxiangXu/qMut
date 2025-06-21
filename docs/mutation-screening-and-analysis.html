@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 4 Mutation Screening and Analysis | Tutorial for R qMut package (v1.0.0)</title>
+  <meta name="description" content="Chapter 4 Mutation Screening and Analysis | Tutorial for R qMut package (v1.0.0)" />
+  <meta name="generator" content="bookdown 0.43 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 4 Mutation Screening and Analysis | Tutorial for R qMut package (v1.0.0)" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 4 Mutation Screening and Analysis | Tutorial for R qMut package (v1.0.0)" />
+  
+  
+  
+
+<meta name="author" content="Hongxiang Xu" />
+
+
+<meta name="date" content="2025-06-21" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="data-integration.html"/>
+
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Tutorial for R qMut package</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> About</a></li>
+<li class="chapter" data-level="2" data-path="install-and-loading-package.html"><a href="install-and-loading-package.html"><i class="fa fa-check"></i><b>2</b> <strong>Install and Loading package</strong></a></li>
+<li class="chapter" data-level="3" data-path="data-integration.html"><a href="data-integration.html"><i class="fa fa-check"></i><b>3</b> Data Integration</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="data-integration.html"><a href="data-integration.html#input-requirements"><i class="fa fa-check"></i><b>3.1</b> Input Requirements</a></li>
+<li class="chapter" data-level="3.2" data-path="data-integration.html"><a href="data-integration.html#creating-the-snp-object"><i class="fa fa-check"></i><b>3.2</b> Creating the SNP Object</a></li>
+<li class="chapter" data-level="3.3" data-path="data-integration.html"><a href="data-integration.html#merging-objects-for-expanded-analysis"><i class="fa fa-check"></i><b>3.3</b> Merging Objects for Expanded Analysis</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="mutation-screening-and-analysis.html"><a href="mutation-screening-and-analysis.html"><i class="fa fa-check"></i><b>4</b> Mutation Screening and Analysis</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="mutation-screening-and-analysis.html"><a href="mutation-screening-and-analysis.html#basic-mutation-statistics"><i class="fa fa-check"></i><b>4.1</b> Basic Mutation Statistics</a></li>
+<li class="chapter" data-level="4.2" data-path="mutation-screening-and-analysis.html"><a href="mutation-screening-and-analysis.html#katg-mutation-analysis-isoniazid-resistance"><i class="fa fa-check"></i><b>4.2</b> katG Mutation Analysis (Isoniazid Resistance)</a></li>
+<li class="chapter" data-level="4.3" data-path="mutation-screening-and-analysis.html"><a href="mutation-screening-and-analysis.html#multi-omics-integration-for-discovery-of-non-neutral-mutations"><i class="fa fa-check"></i><b>4.3</b> Multi-omics Integration for Discovery of Non-neutral Mutations</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Tutorial for R qMut package (v1.0.0)</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="mutation-screening-and-analysis" class="section level1 hasAnchor" number="4">
+<h1><span class="header-section-number">Chapter 4</span> Mutation Screening and Analysis<a href="mutation-screening-and-analysis.html#mutation-screening-and-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>The <code>Mtb_mut</code> object serves as the primary data structure for all downstream analyses in our package. We provide pre-processed qs objects for several common bacterial species:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="mutation-screening-and-analysis.html#cb15-1" tabindex="-1"></a><span class="co"># Load the pre-built Mycobacterium tuberculosis mutation object</span></span>
+<span id="cb15-2"><a href="mutation-screening-and-analysis.html#cb15-2" tabindex="-1"></a>Mtb_mut <span class="ot">&lt;-</span> <span class="fu">qread</span>(<span class="st">&quot;example/Mtb_mut_obj.qs&quot;</span>)</span>
+<span id="cb15-3"><a href="mutation-screening-and-analysis.html#cb15-3" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="mutation-screening-and-analysis.html#cb15-4" tabindex="-1"></a><span class="co"># We can see Mtb_mut S6 object contains a comprehensive set of attributes and methods designed for efficient mutation analysis.</span></span>
+<span id="cb15-5"><a href="mutation-screening-and-analysis.html#cb15-5" tabindex="-1"></a>Mtb_mut</span></code></pre></div>
+<pre><code>## &lt;Mutation Object&gt;
+##   Public:
+##     calculate_NJ: function (num_thread = 1, snp_range = c(0.05, 0.95)) 
+##     clone: function (deep = FALSE) 
+##     estimate_imp: function (gene, gene_type = &quot;GENE&quot;, metadata_col = NULL, upstream_length = NULL) 
+##     estimate_imp_all: function () 
+##     Evolution_dt: function (x) 
+##     filter_sample: function (sample_name = NULL, mutation_index = NULL, opposite = F) 
+##     filter_snp: function (gene, gene_type = &quot;INDEX&quot;, upstream_length = NULL) 
+##     get_metadata: function () 
+##     initialize: function (snp_anno, snp_data, metadata = NULL, remove_genes_dt = NA, 
+##     metadata: data.frame
+##     ML_data_dt: function (selected_pheno) 
+##     modification_info: list
+##     MutNumPlot: function (locus_tag, limit = 1, label_num = 10, show_synomonous = T, 
+##     MutTree: function (locus_tag, limit = 5, size = 20, metadata_col = NULL) 
+##     nj_distance: NA
+##     snp_list: list
+##   Private:
+##     initial_sample: NA</code></pre>
+<div id="basic-mutation-statistics" class="section level2 hasAnchor" number="4.1">
+<h2><span class="header-section-number">4.1</span> Basic Mutation Statistics<a href="mutation-screening-and-analysis.html#basic-mutation-statistics" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="mutation-screening-and-analysis.html#cb17-1" tabindex="-1"></a><span class="co"># Calculate occurrence frequency for all mutations</span></span>
+<span id="cb17-2"><a href="mutation-screening-and-analysis.html#cb17-2" tabindex="-1"></a>all_mut <span class="ot">&lt;-</span> Mtb_mut<span class="sc">$</span><span class="fu">estimate_imp</span>(<span class="st">&quot;all&quot;</span>)</span>
+<span id="cb17-3"><a href="mutation-screening-and-analysis.html#cb17-3" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="mutation-screening-and-analysis.html#cb17-4" tabindex="-1"></a><span class="fu">head</span>(all_mut)</span></code></pre></div>
+<pre><code>##             CHROM POS TYPE FTYPE STRAND  NT_POS AA_POS
+## A8Csnp  NC_018143   8  snp   CDS      +  8/1524  3/507
+## G10Csnp NC_018143  10  snp   CDS      + 10/1524  4/507
+## A11Csnp NC_018143  11  snp   CDS      + 11/1524  4/507
+## C12Tsnp NC_018143  12  snp   CDS      + 12/1524  4/507
+## C15Tsnp NC_018143  15  snp   CDS      + 15/1524  5/507
+## G16Csnp NC_018143  16  snp   CDS      + 16/1524  6/507
+##                                       EFFECT LOCUS_TAG_NEW GENE
+## A8Csnp     missense_variant c.8A&gt;C p.Asp3Ala  RVBD_RS00005 dnaA
+## G10Csnp   missense_variant c.10G&gt;C p.Asp4His  RVBD_RS00005 dnaA
+## A11Csnp   missense_variant c.11A&gt;C p.Asp4Ala  RVBD_RS00005 dnaA
+## C12Tsnp synonymous_variant c.12C&gt;T p.Asp4Asp  RVBD_RS00005 dnaA
+## C15Tsnp synonymous_variant c.15C&gt;T p.Pro5Pro  RVBD_RS00005 dnaA
+## G16Csnp   missense_variant c.16G&gt;C p.Gly6Arg  RVBD_RS00005 dnaA
+##                                                PRODUCT AA_effect_short
+## A8Csnp  chromosomal replication initiator protein DnaA             D3A
+## G10Csnp chromosomal replication initiator protein DnaA             D4H
+## A11Csnp chromosomal replication initiator protein DnaA             D4A
+## C12Tsnp chromosomal replication initiator protein DnaA             D4D
+## C15Tsnp chromosomal replication initiator protein DnaA             P5P
+## G16Csnp chromosomal replication initiator protein DnaA             G6R
+##         LOCUS_TAG   INDEX Acetylation Phosphorylation Times
+## A8Csnp     Rv0001  A8Csnp          NA              NA     2
+## G10Csnp    Rv0001 G10Csnp          NA              NA     1
+## A11Csnp    Rv0001 A11Csnp          NA              NA    28
+## C12Tsnp    Rv0001 C12Tsnp          NA              NA     1
+## C15Tsnp    Rv0001 C15Tsnp          NA              NA     2
+## G16Csnp    Rv0001 G16Csnp          NA              NA     1</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="mutation-screening-and-analysis.html#cb19-1" tabindex="-1"></a><span class="co"># Analyze mutations in Rv0324 (default: coding sequence only)</span></span>
+<span id="cb19-2"><a href="mutation-screening-and-analysis.html#cb19-2" tabindex="-1"></a>Rv0324_mut <span class="ot">&lt;-</span> Mtb_mut<span class="sc">$</span><span class="fu">estimate_imp</span>(<span class="st">&quot;Rv0324&quot;</span>, <span class="at">gene_type =</span> <span class="st">&quot;LOCUS_TAG&quot;</span>)</span></code></pre></div>
+<pre><code>## filter genes</code></pre>
+<pre><code>## remain 51181 sample and 191 snps</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="mutation-screening-and-analysis.html#cb22-1" tabindex="-1"></a><span class="co"># Now you can see the total occurance time of each mutations in Rv0324 for the Mtb_mut</span></span>
+<span id="cb22-2"><a href="mutation-screening-and-analysis.html#cb22-2" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="mutation-screening-and-analysis.html#cb22-3" tabindex="-1"></a><span class="fu">head</span>(Rv0324_mut)</span></code></pre></div>
+<pre><code>##                 CHROM    POS TYPE FTYPE STRAND NT_POS AA_POS
+## A391352Tsnp NC_018143 391352  snp   CDS      +  1/681  1/226
+## G391354Csnp NC_018143 391354  snp   CDS      +  3/681  1/226
+## G391355Asnp NC_018143 391355  snp   CDS      +  4/681  2/226
+## C391356Asnp NC_018143 391356  snp   CDS      +  5/681  2/226
+## G391359Asnp NC_018143 391359  snp   CDS      +  8/681  3/226
+## C391365Tsnp NC_018143 391365  snp   CDS      + 14/681  5/226
+##                                             EFFECT LOCUS_TAG_NEW   GENE
+## A391352Tsnp initiator_codon_variant c.1A&gt;T p.Met1?  RVBD_RS01710 Rv0324
+## G391354Csnp initiator_codon_variant c.3G&gt;C p.Met1?  RVBD_RS01710 Rv0324
+## G391355Asnp      missense_variant c.4G&gt;A p.Ala2Thr  RVBD_RS01710 Rv0324
+## C391356Asnp      missense_variant c.5C&gt;A p.Ala2Asp  RVBD_RS01710 Rv0324
+## G391359Asnp      missense_variant c.8G&gt;A p.Gly3Glu  RVBD_RS01710 Rv0324
+## C391365Tsnp     missense_variant c.14C&gt;T p.Ser5Phe  RVBD_RS01710 Rv0324
+##                                                            PRODUCT
+## A391352Tsnp metalloregulator ArsR/SmtB family transcription factor
+## G391354Csnp metalloregulator ArsR/SmtB family transcription factor
+## G391355Asnp metalloregulator ArsR/SmtB family transcription factor
+## C391356Asnp metalloregulator ArsR/SmtB family transcription factor
+## G391359Asnp metalloregulator ArsR/SmtB family transcription factor
+## C391365Tsnp metalloregulator ArsR/SmtB family transcription factor
+##             AA_effect_short LOCUS_TAG       INDEX Acetylation Phosphorylation
+## A391352Tsnp             M1?    Rv0324 A391352Tsnp          NA              NA
+## G391354Csnp             M1?    Rv0324 G391354Csnp          NA              NA
+## G391355Asnp             A2T    Rv0324 G391355Asnp          NA              NA
+## C391356Asnp             A2D    Rv0324 C391356Asnp          NA              NA
+## G391359Asnp             G3E    Rv0324 G391359Asnp          NA              NA
+## C391365Tsnp             S5F    Rv0324 C391365Tsnp          NA              NA
+##             Times
+## A391352Tsnp     1
+## G391354Csnp     4
+## G391355Asnp     1
+## C391356Asnp     1
+## G391359Asnp     1
+## C391365Tsnp     1</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="mutation-screening-and-analysis.html#cb24-1" tabindex="-1"></a><span class="do">## Include 300bp upstream regulatory region</span></span>
+<span id="cb24-2"><a href="mutation-screening-and-analysis.html#cb24-2" tabindex="-1"></a>Rv0324_mut <span class="ot">&lt;-</span> Mtb_mut<span class="sc">$</span><span class="fu">estimate_imp</span>(<span class="at">gene =</span> <span class="st">&quot;Rv0324&quot;</span>,</span>
+<span id="cb24-3"><a href="mutation-screening-and-analysis.html#cb24-3" tabindex="-1"></a>                                   <span class="at">gene_type =</span> <span class="st">&quot;LOCUS_TAG&quot;</span>,</span>
+<span id="cb24-4"><a href="mutation-screening-and-analysis.html#cb24-4" tabindex="-1"></a>                                   <span class="at">upstream_length =</span> <span class="dv">300</span>)</span></code></pre></div>
+<pre><code>## filter genes</code></pre>
+<pre><code>## remain 51181 sample and 293 snps</code></pre>
+<p>You should keep in mind that this statistical result will dynamically update alongside changes in the object. For example, if you filter the dataset to isolate strains with specific drug-resistance mutations and generate a new object, the statistics will then reflect the mutation status of Rv0324 exclusively within those drug-resistant strains.</p>
+</div>
+<div id="katg-mutation-analysis-isoniazid-resistance" class="section level2 hasAnchor" number="4.2">
+<h2><span class="header-section-number">4.2</span> katG Mutation Analysis (Isoniazid Resistance)<a href="mutation-screening-and-analysis.html#katg-mutation-analysis-isoniazid-resistance" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We will now demonstrate the basic usage of this object through a katG mutation analysis. This project begins by filtering Mycobacterium tuberculosis strains containing the classic isoniazid resistance mutation katG R463L. It then calculates lineage-specific differences in all katG mutations between R463L strains and wild-type (WT) strains. Additionally, we assess whether each mutation in embB (the ethambutol resistance gene) shows statistically significant differences in prevalence between R463L and WT strain group</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="mutation-screening-and-analysis.html#cb27-1" tabindex="-1"></a><span class="co"># Identify all katG mutations</span></span>
+<span id="cb27-2"><a href="mutation-screening-and-analysis.html#cb27-2" tabindex="-1"></a>katG_mut <span class="ot">&lt;-</span> Mtb_mut<span class="sc">$</span><span class="fu">estimate_imp</span>(<span class="st">&quot;katG&quot;</span>, <span class="at">gene_type =</span> <span class="st">&quot;GENE&quot;</span>)</span></code></pre></div>
+<pre><code>## filter genes</code></pre>
+<pre><code>## remain 51181 sample and 1271 snps</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="mutation-screening-and-analysis.html#cb30-1" tabindex="-1"></a><span class="co"># Filter strains with R463L variant (a common INH resistance mutation)</span></span>
+<span id="cb30-2"><a href="mutation-screening-and-analysis.html#cb30-2" tabindex="-1"></a>katG_R463L_index <span class="ot">&lt;-</span> katG_mut <span class="sc">%&gt;%</span> </span>
+<span id="cb30-3"><a href="mutation-screening-and-analysis.html#cb30-3" tabindex="-1"></a>  <span class="fu">filter</span>(AA_effect_short <span class="sc">==</span> <span class="st">&quot;R463L&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb30-4"><a href="mutation-screening-and-analysis.html#cb30-4" tabindex="-1"></a>  <span class="fu">pull</span>(INDEX)</span>
+<span id="cb30-5"><a href="mutation-screening-and-analysis.html#cb30-5" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="mutation-screening-and-analysis.html#cb30-6" tabindex="-1"></a><span class="co"># filter_sample function will keep samples with katG_R463L mutation.</span></span>
+<span id="cb30-7"><a href="mutation-screening-and-analysis.html#cb30-7" tabindex="-1"></a>katG_R463L <span class="ot">&lt;-</span> Mtb_mut<span class="sc">$</span><span class="fu">filter_sample</span>(<span class="at">mutation_index =</span> katG_R463L_index)</span></code></pre></div>
+<pre><code>## remain 24610 sample and 1293186 snps</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="mutation-screening-and-analysis.html#cb32-1" tabindex="-1"></a><span class="co"># To examine how katG mutations are distributed across different bacterial </span></span>
+<span id="cb32-2"><a href="mutation-screening-and-analysis.html#cb32-2" tabindex="-1"></a><span class="co"># lineages, we can perform lineage-specific frequency calculations </span></span>
+<span id="cb32-3"><a href="mutation-screening-and-analysis.html#cb32-3" tabindex="-1"></a><span class="co"># statistically:</span></span>
+<span id="cb32-4"><a href="mutation-screening-and-analysis.html#cb32-4" tabindex="-1"></a>Mtb_mut<span class="sc">$</span><span class="fu">estimate_imp</span>(<span class="st">&quot;katG&quot;</span>,<span class="at">gene_type =</span> <span class="st">&quot;GENE&quot;</span>,<span class="at">metadata_col =</span> <span class="st">&quot;Lineage&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb32-5"><a href="mutation-screening-and-analysis.html#cb32-5" tabindex="-1"></a>  <span class="fu">filter</span>(INDEX <span class="sc">%in%</span> katG_R463L_index)</span></code></pre></div>
+<pre><code>## filter genes</code></pre>
+<pre><code>## remain 51181 sample and 1271 snps</code></pre>
+<pre><code>## calculate mutation frequency</code></pre>
+<pre><code>##                          CHROM     POS    TYPE FTYPE STRAND    NT_POS  AA_POS
+## C2154731Asnp         NC_018143 2154731     snp   CDS      - 1388/2223 463/740
+## CGG2154731AGTcomplex NC_018143 2154731 complex   CDS      - 1388/2223 462/740
+## CG2154731AAcomplex   NC_018143 2154731 complex   CDS      - 1388/2223 463/740
+## CGG2154731AGAcomplex NC_018143 2154731 complex   CDS      - 1388/2223 462/740
+##                                                                    EFFECT
+## C2154731Asnp                       missense_variant c.1388G&gt;T p.Arg463Leu
+## CGG2154731AGTcomplex missense_variant c.1386_1388delCCGinsACT p.Arg463Leu
+## CG2154731AAcomplex     missense_variant c.1387_1388delCGinsTT p.Arg463Leu
+## CGG2154731AGAcomplex missense_variant c.1386_1388delCCGinsTCT p.Arg463Leu
+##                      LOCUS_TAG_NEW GENE                 PRODUCT AA_effect_short
+## C2154731Asnp          RVBD_RS10020 katG catalase/peroxidase HPI           R463L
+## CGG2154731AGTcomplex  RVBD_RS10020 katG catalase/peroxidase HPI           R463L
+## CG2154731AAcomplex    RVBD_RS10020 katG catalase/peroxidase HPI           R463L
+## CGG2154731AGAcomplex  RVBD_RS10020 katG catalase/peroxidase HPI           R463L
+##                      LOCUS_TAG                INDEX Acetylation Phosphorylation
+## C2154731Asnp           Rv1908c         C2154731Asnp          NA              NA
+## CGG2154731AGTcomplex   Rv1908c CGG2154731AGTcomplex          NA              NA
+## CG2154731AAcomplex     Rv1908c   CG2154731AAcomplex          NA              NA
+## CGG2154731AGAcomplex   Rv1908c CGG2154731AGAcomplex          NA              NA
+##                      percents_L2 percents_L4 percents_L1 percents_L3
+## C2154731Asnp             0.98083      0.0021     0.98321      0.9801
+## CGG2154731AGTcomplex     0.00007      0.0000     0.00000      0.0000
+## CG2154731AAcomplex       0.00007      0.0000     0.00000      0.0000
+## CGG2154731AGAcomplex     0.00007      0.0000     0.00000      0.0000
+##                      percents_L5 percents_L6 percents_LBOV percents_L7
+## C2154731Asnp             0.99448     0.98795         0.995     0.98113
+## CGG2154731AGTcomplex     0.00000     0.00000         0.000     0.00000
+## CG2154731AAcomplex       0.00000     0.00000         0.000     0.00000
+## CGG2154731AGAcomplex     0.00000     0.00000         0.000     0.00000</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="mutation-screening-and-analysis.html#cb37-1" tabindex="-1"></a><span class="co"># Analysis of Drug Resistance Mutation Co-occurrence Patterns</span></span>
+<span id="cb37-2"><a href="mutation-screening-and-analysis.html#cb37-2" tabindex="-1"></a><span class="co"># Comparative Analysis of embB Mutations in katG R463L Strains vs. WT Strains</span></span>
+<span id="cb37-3"><a href="mutation-screening-and-analysis.html#cb37-3" tabindex="-1"></a>embB_compare <span class="ot">&lt;-</span> Mtb_mut<span class="sc">$</span><span class="fu">estimate_imp</span>(<span class="st">&quot;embB&quot;</span>,<span class="at">gene_type =</span> <span class="st">&quot;GENE&quot;</span>,<span class="at">metadata_col =</span> katG_R463L_index[<span class="dv">1</span>])</span></code></pre></div>
+<pre><code>## filter genes</code></pre>
+<pre><code>## remain 51181 sample and 1882 snps</code></pre>
+<pre><code>## calculate mutation frequency</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="mutation-screening-and-analysis.html#cb41-1" tabindex="-1"></a><span class="co"># Display significant non-synonymous embB mutations</span></span>
+<span id="cb41-2"><a href="mutation-screening-and-analysis.html#cb41-2" tabindex="-1"></a>embB_compare <span class="sc">%&gt;%</span> </span>
+<span id="cb41-3"><a href="mutation-screening-and-analysis.html#cb41-3" tabindex="-1"></a>  <span class="fu">arrange</span>(FDR) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-4"><a href="mutation-screening-and-analysis.html#cb41-4" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(EFFECT, <span class="st">&quot;synonymous_variant&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-5"><a href="mutation-screening-and-analysis.html#cb41-5" tabindex="-1"></a>  <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>##                  CHROM     POS TYPE FTYPE STRAND    NT_POS    AA_POS
+## A4247824Csnp NC_018143 4247824  snp   CDS      + 1133/3297  378/1098
+## A4246729Gsnp NC_018143 4246729  snp   CDS      +   38/3297   13/1098
+## A4247607Gsnp NC_018143 4247607  snp   CDS      +  916/3297  306/1098
+## T4247580Gsnp NC_018143 4247580  snp   CDS      +  889/3297  297/1098
+## A4249935Gsnp NC_018143 4249935  snp   CDS      + 3244/3297 1082/1098
+## T4247691Csnp NC_018143 4247691  snp   CDS      + 1000/3297  334/1098
+##                                               EFFECT LOCUS_TAG_NEW GENE
+## A4247824Csnp  missense_variant c.1133A&gt;C p.Glu378Ala  RVBD_RS20020 embB
+## A4246729Gsnp     missense_variant c.38A&gt;G p.Asn13Ser  RVBD_RS20020 embB
+## A4247607Gsnp   missense_variant c.916A&gt;G p.Met306Val  RVBD_RS20020 embB
+## T4247580Gsnp   missense_variant c.889T&gt;G p.Ser297Ala  RVBD_RS20020 embB
+## A4249935Gsnp missense_variant c.3244A&gt;G p.Thr1082Ala  RVBD_RS20020 embB
+## T4247691Csnp  missense_variant c.1000T&gt;C p.Tyr334His  RVBD_RS20020 embB
+##                                 PRODUCT AA_effect_short LOCUS_TAG        INDEX
+## A4247824Csnp arabinosyltransferase EmbB           E378A    Rv3795 A4247824Csnp
+## A4246729Gsnp arabinosyltransferase EmbB            N13S    Rv3795 A4246729Gsnp
+## A4247607Gsnp arabinosyltransferase EmbB           M306V    Rv3795 A4247607Gsnp
+## T4247580Gsnp arabinosyltransferase EmbB           S297A    Rv3795 T4247580Gsnp
+## A4249935Gsnp arabinosyltransferase EmbB          T1082A    Rv3795 A4249935Gsnp
+## T4247691Csnp arabinosyltransferase EmbB           Y334H    Rv3795 T4247691Csnp
+##              Acetylation Phosphorylation count_total count_1 count_0    n1
+## A4247824Csnp          NA              NA        5807    5753      54 24610
+## A4246729Gsnp          NA              NA         645     639       6 24610
+## A4247607Gsnp          NA              NA        3530    2328    1202 24610
+## T4247580Gsnp          NA              NA         377       6     371 24610
+## A4249935Gsnp          NA              NA         200     198       2 24610
+## T4247691Csnp          NA              NA         165     163       2 24610
+##                 n0       P_value           FDR
+## A4247824Csnp 26571  0.000000e+00  0.000000e+00
+## A4246729Gsnp 26571 5.938948e-150 1.397138e-147
+## A4247607Gsnp 26571 1.993314e-107 4.168242e-105
+## T4247580Gsnp 26571  1.696397e-73  3.192620e-71
+## A4249935Gsnp 26571  3.926395e-60  6.717705e-58
+## T4247691Csnp 26571  4.117553e-49  5.535168e-47</code></pre>
+<p>The analysis reveals that the mutation of <em>embB</em> E306V appears at significantly higher frequency in <em>katG</em> R463L strains, which may reflect selection pressure of combination therapy, as INH and ethambutol (EMB) are frequently co-administered.</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="mutation-screening-and-analysis.html#cb43-1" tabindex="-1"></a><span class="co"># Generate and visualize mutation frequency tree of embB mutations in katG R463L strains and compare lineage distribution</span></span>
+<span id="cb43-2"><a href="mutation-screening-and-analysis.html#cb43-2" tabindex="-1"></a>mut_tree <span class="ot">&lt;-</span> katG_R463L<span class="sc">$</span><span class="fu">MutTree</span>(</span>
+<span id="cb43-3"><a href="mutation-screening-and-analysis.html#cb43-3" tabindex="-1"></a>  <span class="at">locus_tag =</span> <span class="st">&quot;Rv3795&quot;</span>,  <span class="co"># embB gene locus</span></span>
+<span id="cb43-4"><a href="mutation-screening-and-analysis.html#cb43-4" tabindex="-1"></a>  <span class="at">limit =</span> <span class="dv">10</span>,            <span class="co"># Display top 10 mutations</span></span>
+<span id="cb43-5"><a href="mutation-screening-and-analysis.html#cb43-5" tabindex="-1"></a>  <span class="at">metadata_col =</span> <span class="st">&quot;Lineage&quot;</span> <span class="co"># compare lineage distribution</span></span>
+<span id="cb43-6"><a href="mutation-screening-and-analysis.html#cb43-6" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>## remain 24610 sample and 1534 snps
+## remain 729 significant snps
+## remain 61 samples with Freq &gt;= 10</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div id="multi-omics-integration-for-discovery-of-non-neutral-mutations" class="section level2 hasAnchor" number="4.3">
+<h2><span class="header-section-number">4.3</span> Multi-omics Integration for Discovery of Non-neutral Mutations<a href="mutation-screening-and-analysis.html#multi-omics-integration-for-discovery-of-non-neutral-mutations" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Post-translational modification (PTM) omics analysis have identified many PTM sites in pathogens.</p>
+<p>Here, we demonstrate the utility of our package using acetylation proteomics data from Mycobacterium tuberculosis (Mtb) generated by our lab (<span class="citation">Xie et al. (<a href="#ref-xie2015acetylation">2015</a>)</span>), combined with recently published O-phosphorylation proteomics data (<span class="citation">Frando et al. (<a href="#ref-frando2023phosphorylation">2023</a>)</span>). This integrated approach enables rapid identification of evolutionarily positively selected phosphorylation sites.</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="mutation-screening-and-analysis.html#cb45-1" tabindex="-1"></a><span class="co"># The data file must contain at least two required columns: GENE/LOCUS_TAG and AA_POS (amino acid position)</span></span>
+<span id="cb45-2"><a href="mutation-screening-and-analysis.html#cb45-2" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="mutation-screening-and-analysis.html#cb45-3" tabindex="-1"></a><span class="co"># Load experimentally validated phosphorylation sites</span></span>
+<span id="cb45-4"><a href="mutation-screening-and-analysis.html#cb45-4" tabindex="-1"></a>pho_info <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;example/Mtb_pho.csv&quot;</span>)</span>
+<span id="cb45-5"><a href="mutation-screening-and-analysis.html#cb45-5" tabindex="-1"></a></span>
+<span id="cb45-6"><a href="mutation-screening-and-analysis.html#cb45-6" tabindex="-1"></a><span class="fu">head</span>(pho_info)</span></code></pre></div>
+<pre><code>##   GENE        Phosphopeptide LOCUS_TAG AA_POS AA Dataset Ascore
+## 1 dnaA        YTFDT@FVIGASNR    Rv0001    176  T      LF     NA
+## 2 dnaA      AYNPLFIWGES@GLGK    Rv0001    210  S      LF     NA
+## 3 dnaA YVSTEEFTNDFINS@LRDDRK    Rv0001    249  S      LF     NA
+## 4 dnaA           QLAT@LEDRLR    Rv0001    313  T      LF     NA
+## 5 dnaA             QLAT@LEDR    Rv0001    313  T      LF     NA
+## 6 dnaA            VTAFAS@LNK    Rv0001    384  S      LF     NA
+##   MaxQuant.Probability Pos
+## 1                    1 176
+## 2                    1 210
+## 3                    1 249
+## 4                    1 313
+## 5                    1 313
+## 6                    1 384</code></pre>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="mutation-screening-and-analysis.html#cb47-1" tabindex="-1"></a><span class="co"># Load experimentally validated acetylation sites</span></span>
+<span id="cb47-2"><a href="mutation-screening-and-analysis.html#cb47-2" tabindex="-1"></a>ace_info <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;example/Mtb_ace.csv&quot;</span>)</span>
+<span id="cb47-3"><a href="mutation-screening-and-analysis.html#cb47-3" tabindex="-1"></a></span>
+<span id="cb47-4"><a href="mutation-screening-and-analysis.html#cb47-4" tabindex="-1"></a></span>
+<span id="cb47-5"><a href="mutation-screening-and-analysis.html#cb47-5" tabindex="-1"></a></span>
+<span id="cb47-6"><a href="mutation-screening-and-analysis.html#cb47-6" tabindex="-1"></a><span class="co"># # Using the AddModificationInfo function, we integrate PTM information into the mutation data. This step annotates whether each mutation occurs at known PTM sites.</span></span>
+<span id="cb47-7"><a href="mutation-screening-and-analysis.html#cb47-7" tabindex="-1"></a><span class="co"># As Mtb_mut here has already Add Modification Info, we will not run these code below.</span></span>
+<span id="cb47-8"><a href="mutation-screening-and-analysis.html#cb47-8" tabindex="-1"></a><span class="co"># Mtb_mut &lt;- AddModificationInfo(Mtb_mut,</span></span>
+<span id="cb47-9"><a href="mutation-screening-and-analysis.html#cb47-9" tabindex="-1"></a><span class="co">#                                modification_dt = ace_info,</span></span>
+<span id="cb47-10"><a href="mutation-screening-and-analysis.html#cb47-10" tabindex="-1"></a><span class="co">#                                type = &quot;Acetylation&quot;)</span></span>
+<span id="cb47-11"><a href="mutation-screening-and-analysis.html#cb47-11" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb47-12"><a href="mutation-screening-and-analysis.html#cb47-12" tabindex="-1"></a><span class="co"># Mtb_mut &lt;- AddModificationInfo(Mtb_mut,</span></span>
+<span id="cb47-13"><a href="mutation-screening-and-analysis.html#cb47-13" tabindex="-1"></a><span class="co">#                                modification_dt = pho_info,</span></span>
+<span id="cb47-14"><a href="mutation-screening-and-analysis.html#cb47-14" tabindex="-1"></a><span class="co">#                                type = &quot;Phosphorylation&quot;)</span></span>
+<span id="cb47-15"><a href="mutation-screening-and-analysis.html#cb47-15" tabindex="-1"></a></span>
+<span id="cb47-16"><a href="mutation-screening-and-analysis.html#cb47-16" tabindex="-1"></a><span class="co"># The enhanced mutation annotation now includes two new columns:</span></span>
+<span id="cb47-17"><a href="mutation-screening-and-analysis.html#cb47-17" tabindex="-1"></a><span class="co"># Acetylation: Indicates if the site is a known acetylation site</span></span>
+<span id="cb47-18"><a href="mutation-screening-and-analysis.html#cb47-18" tabindex="-1"></a><span class="co"># Phosphorylation: Indicates if the site is a known phosphorylation site</span></span>
+<span id="cb47-19"><a href="mutation-screening-and-analysis.html#cb47-19" tabindex="-1"></a>Mtb_mut<span class="sc">$</span>snp_list<span class="sc">$</span>snp_anno <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>##             CHROM POS TYPE FTYPE STRAND  NT_POS AA_POS
+## A8Csnp  NC_018143   8  snp   CDS      +  8/1524  3/507
+## G10Csnp NC_018143  10  snp   CDS      + 10/1524  4/507
+## A11Csnp NC_018143  11  snp   CDS      + 11/1524  4/507
+## C12Tsnp NC_018143  12  snp   CDS      + 12/1524  4/507
+## C15Tsnp NC_018143  15  snp   CDS      + 15/1524  5/507
+## G16Csnp NC_018143  16  snp   CDS      + 16/1524  6/507
+##                                       EFFECT LOCUS_TAG_NEW GENE
+## A8Csnp     missense_variant c.8A&gt;C p.Asp3Ala  RVBD_RS00005 dnaA
+## G10Csnp   missense_variant c.10G&gt;C p.Asp4His  RVBD_RS00005 dnaA
+## A11Csnp   missense_variant c.11A&gt;C p.Asp4Ala  RVBD_RS00005 dnaA
+## C12Tsnp synonymous_variant c.12C&gt;T p.Asp4Asp  RVBD_RS00005 dnaA
+## C15Tsnp synonymous_variant c.15C&gt;T p.Pro5Pro  RVBD_RS00005 dnaA
+## G16Csnp   missense_variant c.16G&gt;C p.Gly6Arg  RVBD_RS00005 dnaA
+##                                                PRODUCT AA_effect_short
+## A8Csnp  chromosomal replication initiator protein DnaA             D3A
+## G10Csnp chromosomal replication initiator protein DnaA             D4H
+## A11Csnp chromosomal replication initiator protein DnaA             D4A
+## C12Tsnp chromosomal replication initiator protein DnaA             D4D
+## C15Tsnp chromosomal replication initiator protein DnaA             P5P
+## G16Csnp chromosomal replication initiator protein DnaA             G6R
+##         LOCUS_TAG   INDEX Acetylation Phosphorylation
+## A8Csnp     Rv0001  A8Csnp          NA              NA
+## G10Csnp    Rv0001 G10Csnp          NA              NA
+## A11Csnp    Rv0001 A11Csnp          NA              NA
+## C12Tsnp    Rv0001 C12Tsnp          NA              NA
+## C15Tsnp    Rv0001 C15Tsnp          NA              NA
+## G16Csnp    Rv0001 G16Csnp          NA              NA</code></pre>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="mutation-screening-and-analysis.html#cb49-1" tabindex="-1"></a><span class="co"># Filter mutations occurring at phosphorylation sites</span></span>
+<span id="cb49-2"><a href="mutation-screening-and-analysis.html#cb49-2" tabindex="-1"></a>Mtb_mut<span class="sc">$</span>snp_list<span class="sc">$</span>snp_anno <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Phosphorylation<span class="sc">==</span>T) <span class="sc">%&gt;%</span> <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>##              CHROM POS TYPE FTYPE STRAND   NT_POS  AA_POS
+## A526Gsnp NC_018143 526  snp   CDS      + 526/1524 176/507
+## C527Tsnp NC_018143 527  snp   CDS      + 527/1524 176/507
+## C629Gsnp NC_018143 629  snp   CDS      + 629/1524 210/507
+## C630Tsnp NC_018143 630  snp   CDS      + 630/1524 210/507
+## C630Gsnp NC_018143 630  snp   CDS      + 630/1524 210/507
+## C876Gsnp NC_018143 876  snp   CDS      + 876/1524 292/507
+##                                           EFFECT LOCUS_TAG_NEW GENE
+## A526Gsnp   missense_variant c.526A&gt;G p.Thr176Ala  RVBD_RS00005 dnaA
+## C527Tsnp   missense_variant c.527C&gt;T p.Thr176Met  RVBD_RS00005 dnaA
+## C629Gsnp   missense_variant c.629C&gt;G p.Ser210Cys  RVBD_RS00005 dnaA
+## C630Tsnp synonymous_variant c.630C&gt;T p.Ser210Ser  RVBD_RS00005 dnaA
+## C630Gsnp synonymous_variant c.630C&gt;G p.Ser210Ser  RVBD_RS00005 dnaA
+## C876Gsnp synonymous_variant c.876C&gt;G p.Thr292Thr  RVBD_RS00005 dnaA
+##                                                 PRODUCT AA_effect_short
+## A526Gsnp chromosomal replication initiator protein DnaA           T176A
+## C527Tsnp chromosomal replication initiator protein DnaA           T176M
+## C629Gsnp chromosomal replication initiator protein DnaA           S210C
+## C630Tsnp chromosomal replication initiator protein DnaA           S210S
+## C630Gsnp chromosomal replication initiator protein DnaA           S210S
+## C876Gsnp chromosomal replication initiator protein DnaA           T292T
+##          LOCUS_TAG    INDEX Acetylation Phosphorylation
+## A526Gsnp    Rv0001 A526Gsnp          NA            TRUE
+## C527Tsnp    Rv0001 C527Tsnp          NA            TRUE
+## C629Gsnp    Rv0001 C629Gsnp          NA            TRUE
+## C630Tsnp    Rv0001 C630Tsnp          NA            TRUE
+## C630Gsnp    Rv0001 C630Gsnp          NA            TRUE
+## C876Gsnp    Rv0001 C876Gsnp          NA            TRUE</code></pre>
+<p>The MutNumPlot function enables visualization of mutation frequency distribution for specific genes, with PTM sites highlighted. This visualization helps identify key mutations that may affect protein post-translational modifications.</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="mutation-screening-and-analysis.html#cb51-1" tabindex="-1"></a><span class="co"># Visualize mutation frequency distributions</span></span>
+<span id="cb51-2"><a href="mutation-screening-and-analysis.html#cb51-2" tabindex="-1"></a>Mtb_mut<span class="sc">$</span><span class="fu">MutNumPlot</span>(<span class="st">&quot;Rv0324&quot;</span>,<span class="at">Modification =</span> <span class="cn">NULL</span>)</span></code></pre></div>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="mutation-screening-and-analysis.html#cb52-1" tabindex="-1"></a><span class="co"># PTM sites (acetylation and phosphorylation) are highlighted with special colors</span></span>
+<span id="cb52-2"><a href="mutation-screening-and-analysis.html#cb52-2" tabindex="-1"></a>Mtb_mut<span class="sc">$</span><span class="fu">MutNumPlot</span>(<span class="st">&quot;Rv0324&quot;</span>,<span class="at">Modification =</span> <span class="fu">c</span>(<span class="st">&quot;Acetylation&quot;</span>,<span class="st">&quot;Phosphorylation&quot;</span>),</span>
+<span id="cb52-3"><a href="mutation-screening-and-analysis.html#cb52-3" tabindex="-1"></a>                   <span class="at">show_synomonous =</span> T,  <span class="co"># show synomonous mutation</span></span>
+<span id="cb52-4"><a href="mutation-screening-and-analysis.html#cb52-4" tabindex="-1"></a>                   <span class="at">limit =</span> <span class="dv">5</span>,            <span class="co"># minimun mutation counts to plot</span></span>
+<span id="cb52-5"><a href="mutation-screening-and-analysis.html#cb52-5" tabindex="-1"></a>                   <span class="at">label_num =</span> <span class="dv">15</span>)       <span class="co"># label numbers of top mutation counts to show</span></span></code></pre></div>
+<p><img src="index_files/figure-html/unnamed-chunk-13-2.png" width="672" /></p>
+<p>Critically, we experimentally validated that mutation of the phosphosite T168A in Rv0324 partially rescues growth arrest during <em>Rv0324</em> overexpression in <em>Mycobacterium semgmatis</em>—a cornerstone model organism in mycobacterial research. This finding underscores the practical utility of this straightforward functional approach.</p>
+
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div class="csl-entry">
+Frando, Alex, Vatsal Boradia, Marina Gritsenko, Christine Beltejar, Lisa Day, David R Sherman, Si Ma, Jesse M Jacobs, and Christoph Grundner. 2023. <span>“The Mycobacterium Tuberculosis Protein o-Phosphorylation Landscape.”</span> <em>Nature Microbiology</em> 8 (3): 548–61. <a href="https://doi.org/10.1038/s41564-023-01367-z">https://doi.org/10.1038/s41564-023-01367-z</a>.
+</div>
+<div class="csl-entry">
+Liu, Qinqin, Jian Zhu, Colin L Dulberger, Sierra Stanley, Sarah Wilson, Emily S Chung, Xiaojun Wang, et al. 2022. <span>“Tuberculosis Treatment Failure Associated with Evolution of Antibiotic Resilience.”</span> <em>Science</em> 378 (6624): 1111–18. <a href="https://doi.org/10.1126/science.abq2787">https://doi.org/10.1126/science.abq2787</a>.
+</div>
+<div class="csl-entry">
+Xie, Lianhui, Xiaojun Wang, Jia Zeng, Mei Zhou, Xiaohui Duan, Qiaoling Li, Zheng Zhang, et al. 2015. <span>“Proteome-Wide Lysine Acetylation Profiling of the Human Pathogen Mycobacterium Tuberculosis.”</span> <em>International Journal of Biochemistry &amp; Cell Biology</em> 59 (February): 193–202. <a href="https://doi.org/10.1016/j.biocel.2014.11.010">https://doi.org/10.1016/j.biocel.2014.11.010</a>.
+</div>
+</div>
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-frando2023phosphorylation" class="csl-entry">
+Frando, Alex, Vatsal Boradia, Marina Gritsenko, Christine Beltejar, Lisa Day, David R Sherman, Si Ma, Jesse M Jacobs, and Christoph Grundner. 2023. <span>“The Mycobacterium Tuberculosis Protein o-Phosphorylation Landscape.”</span> <em>Nature Microbiology</em> 8 (3): 548–61. <a href="https://doi.org/10.1038/s41564-023-01367-z">https://doi.org/10.1038/s41564-023-01367-z</a>.
+</div>
+<div id="ref-xie2015acetylation" class="csl-entry">
+Xie, Lianhui, Xiaojun Wang, Jia Zeng, Mei Zhou, Xiaohui Duan, Qiaoling Li, Zheng Zhang, et al. 2015. <span>“Proteome-Wide Lysine Acetylation Profiling of the Human Pathogen Mycobacterium Tuberculosis.”</span> <em>International Journal of Biochemistry &amp; Cell Biology</em> 59 (February): 193–202. <a href="https://doi.org/10.1016/j.biocel.2014.11.010">https://doi.org/10.1016/j.biocel.2014.11.010</a>.
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="data-integration.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": {
+    "github": false,
+    "facebook": true,
+    "twitter": true,
+    "linkedin": false,
+    "weibo": false,
+    "instapaper": false,
+    "vk": false,
+    "whatsapp": false,
+    "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+  },
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": "https://github.com/USERNAME/REPO/edit/BRANCH/index.Rmd",
+    "text": "Edit"
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": ["_main.pdf", "_main.epub"],
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "subsection"
+  }
+});
+});
+</script>
+
+</body>
+
+</html>

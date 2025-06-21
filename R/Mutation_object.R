@@ -13,6 +13,7 @@ print_message <- function(message,verbose){
 
 
 
+
 #' @title The Mutation object for snp_data and snp_anno
 #' @description The Mutation object is created to apply all functions for mutation analysis
 #' @export
@@ -42,6 +43,12 @@ SNP <- R6Class(
 
       self$metadata <- metadata
 
+      color_pool <- c("#1F78B4","#FF7F00","#E31A1C","#CAB2D6","#A6CEE3","#FB9A99",
+                      "#33A02C","#cdc0b0","#B2DF8A","#0048ba","#7ac5cd",
+                      "#8D4C6A","#377EB8","#419681","#4DAF4A","#727E76","#984EA3",
+                      "#CB6651","#FFBF19","#FFFF33","#D2AA2D","#A65628","#CE6B73",
+                      "#F781BF")
+      
       ###### 1.sample info initialization
 
       if (!"REF" %in% colnames(snp_anno)){
@@ -686,14 +693,15 @@ SNP <- R6Class(
                 plot.margin = margin(0,0,0,0))+
           scale_y_discrete(limit=order$AA_effect_short)+
           scale_fill_gradient(low = "#A6CEE3",high = "#4DAF4A")
-        
-        color_pool <- c("#1F78B4","#FF7F00","#E31A1C","#CAB2D6","#A6CEE3","#FB9A99",
-                        "#33A02C","#cdc0b0","#B2DF8A","#0048ba","#7ac5cd",
-                        "#8D4C6A","#377EB8","#419681","#4DAF4A","#727E76","#984EA3",
-                        "#CB6651","#FFBF19","#FFFF33","#D2AA2D","#A65628","#CE6B73",
-                        "#F781BF")
+
 
         if (!is.null(metadata_col)){
+          
+          color_pool <- c("#1F78B4","#FF7F00","#E31A1C","#CAB2D6","#A6CEE3","#FB9A99",
+                          "#33A02C","#cdc0b0","#B2DF8A","#0048ba","#7ac5cd",
+                          "#8D4C6A","#377EB8","#419681","#4DAF4A","#727E76","#984EA3",
+                          "#CB6651","#FFBF19","#FFFF33","#D2AA2D","#A65628","#CE6B73",
+                          "#F781BF")
           p3 <-ggplot(data=plot_lineage,
                       aes(x=Normalized_freq,y=AA_effect_short,fill=!!sym(metadata_col)))+
             geom_bar(stat = "identity",position = "fill") +

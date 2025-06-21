@@ -189,9 +189,9 @@ Rv0324_mut <- Mtb_mut$estimate_imp("Rv0324", gene_type = "LOCUS_TAG")
 head(Rv0324_mut)
 
 ## Include 300bp upstream regulatory region
-# Rv0324_mut <- Mtb_mut$estimate_imp(gene = "Rv0324",
-#                                    gene_type = "LOCUS_TAG",
-#                                    upstream_length = 300)
+Rv0324_mut <- Mtb_mut$estimate_imp(gene = "Rv0324",
+                                   gene_type = "LOCUS_TAG",
+                                   upstream_length = 300)
 
 ```
 You should keep in mind that this statistical result will dynamically update alongside changes in the object. For example, if you filter the dataset to isolate strains with specific drug-resistance mutations and generate a new object, the statistics will then reflect the mutation status of Rv0324 exclusively within those drug-resistant strains. 
@@ -261,14 +261,15 @@ ace_info <- read.csv("example/Mtb_ace.csv")
 
 
 
-# Using the AddModificationInfo function, we integrate PTM information into the mutation data. This step annotates whether each mutation occurs at known PTM sites.
-Mtb_mut <- AddModificationInfo(Mtb_mut,
-                               modification_dt = ace_info,
-                               type = "Acetylation")
-
-Mtb_mut <- AddModificationInfo(Mtb_mut,
-                               modification_dt = pho_info,
-                               type = "Phosphorylation")
+# # Using the AddModificationInfo function, we integrate PTM information into the mutation data. This step annotates whether each mutation occurs at known PTM sites.
+# As Mtb_mut here has already Add Modification Info, we will not run these code below.
+# Mtb_mut <- AddModificationInfo(Mtb_mut,
+#                                modification_dt = ace_info,
+#                                type = "Acetylation")
+# 
+# Mtb_mut <- AddModificationInfo(Mtb_mut,
+#                                modification_dt = pho_info,
+#                                type = "Phosphorylation")
 
 # The enhanced mutation annotation now includes two new columns:
 # Acetylation: Indicates if the site is a known acetylation site
