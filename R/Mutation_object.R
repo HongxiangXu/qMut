@@ -260,7 +260,7 @@ SNP <- R6Class(
           index <- na.omit(unique(c(index,index_promoter)))
          }
 
-      } else if (by=="INDEX"){index <- gene}
+      } else if (gene_type=="INDEX"){index <- gene}
 
       else {
         stop("Parameter 'by' should be one of POS,GENE,LOCUS_TAG,INDEX!!!")
@@ -366,8 +366,12 @@ SNP <- R6Class(
     #' will calculate significance difference of mutation counts among different metadata_col levels.
     #' Should be colnames in metadata or the mutation INDEX.
     #' @param upstream_length whether to show the upstream mutation of genes
-    estimate_imp = function(gene,gene_type="GENE", metadata_col=NULL,upstream_length=NULL){
+    #' @param aggregate whether to aggregate mutations which showed the same AA_effect_short
+    estimate_imp = function(gene,gene_type="GENE",metadata_col=NULL,aggregate=F, upstream_length=NULL){
 
+      if (gene=="all" & aggregate==T){
+        stop("aggregate parameter is invalid when you choose all genes!")
+      }
       if (length(gene)==1 && gene=="all" && is.null(metadata_col)){
 
         estimate_res <- self$estimate_imp_all()
@@ -387,19 +391,17 @@ SNP <- R6Class(
         }
       }
 
-
-
       if (is.null(metadata_col)){
         return(new_obj$estimate_imp_all())
       }
-
-
 
       message("calculate mutation frequency")
 
       if (!is.null(metadata_col)){
         if (metadata_col %in% all_index){
 
+          message("Found ",metadata_col," in INDEX")
+          
           group <- self$snp_list$snp_data[rownames(new_obj$snp_list$snp_data),metadata_col]
 
           tmp_dt <- cbind(group,new_obj$snp_list$snp_data)
@@ -420,9 +422,21 @@ SNP <- R6Class(
           snp_summary <- new_obj$snp_list$snp_anno %>%
             mutate(count_total=total_count,
                    count_1=positive_count,
-                   count_0=negative_count,
-                   n1=group_1,
-                   n0=group_0) %>%
+                   count_0=negative_count)
+          
+          if (aggregate == T){
+            message("aggregate mode on, will merge the same AA_effect_short into one row")
+            snp_summary <- snp_summary %>% 
+              dplyr::select(AA_effect_short,LOCUS_TAG,GENE,count_total,count_1,count_0) %>% 
+              aggregate(.~AA_effect_short+LOCUS_TAG+GENE,.,sum)
+          }
+          
+          snp_summary <- snp_summary %>% 
+            mutate(
+              n1=group_1,
+              n0=group_0,
+              p1=count_1/n1,
+              p0=count_0/n0) %>% 
             mutate(
               P_value = mapply(function(k1, k0, n1, n0) {
                 tbl <- matrix(c(k1, n1 - k1, k0, n0 - k0), nrow = 2, byrow = TRUE)
@@ -440,8 +454,6 @@ SNP <- R6Class(
             mutate(FDR = p.adjust(P_value, method = "fdr")) #%>%
             # mutate(P_value=ifelse(P_value < 0.001, sprintf("%.2e", P_value), round(P_value, 3)),
             #        FDR=ifelse(FDR < 0.001, sprintf("%.2e", FDR), round(FDR, 3)))
-
-
           return(snp_summary)
 
         } else if (metadata_col %in% colnames(new_obj$metadata)){
@@ -463,6 +475,7 @@ SNP <- R6Class(
             data.frame(percents)
           })
 
+          
           # 合并所有组的结果
           mutation_summary <- do.call(cbind, result_list)
           colnames(mutation_summary) <- paste("percents",group_levels,sep="_")
@@ -486,11 +499,22 @@ SNP <- R6Class(
     #' @param metadata_col Default is NULL. If the metadata_col was set, the estimate_imp function
     #' will calculate significance difference of mutation counts among different metadata_col levels.
     #' Should be colnames in metadata or the mutation INDEX.
-    MutTree = function(locus_tag,limit=5,size=20,metadata_col=NULL){
+    MutTree = function(locus_tag,limit=5,size=20,heatmap_width=NULL,barplot_width=NULL,metadata_col){
 
       new_obj <- self$clone(deep=T)
 
-      if (!is.null(metadata_col)){
+
+      if (metadata_col %in% new_obj$snp_list$snp_anno$INDEX){
+        
+        lineage <- data.frame(Sample_name=rownames(new_obj$snp_list$snp_data),
+                              group=new_obj$snp_list$snp_data[,metadata_col])
+        colnames(lineage)[2] <- metadata_col
+        
+        lineage[,2][lineage[,2]==1] <- "Present"
+        lineage[,2][lineage[,2]==0] <- "Absent"
+        
+        
+      } else if (metadata_col %in% colnames(new_obj$metadata)){
         lineage <- new_obj$metadata[,c("Sample_name",metadata_col)]
       }
 
@@ -544,10 +568,9 @@ SNP <- R6Class(
                           rownames(snp_single)[.]) %>%
           dplyr::select(AA_effect_short,Freq,Sample_name)
 
-        if (!is.null(metadata_col)){
-          rownames(snp_single) <- filter(lineage,Sample_name %in%
-                                           rownames(snp_single))[,metadata_col]
-        }
+        rownames(snp_single) <- filter(lineage,Sample_name %in%
+                                         rownames(snp_single))[,metadata_col]
+
         #单突变谱系信息
         single_lineage <- map(single_times$AA_effect_short,function(x){
           rownames(snp_single)[snp_single[,x]==1] %>% table() %>%
@@ -589,15 +612,12 @@ SNP <- R6Class(
             filter(Freq >= limit) %>%
             arrange(desc(Freq))
 
-          if (!is.null(metadata_col)){
-
             #多突变谱系
             snp_multiple_chr <- left_join(snp_multiple_chr,lineage,by="Sample_name")
 
             multiple_lineage <- snp_multiple_chr %>%
               group_by(AA_effect_short,!!sym(metadata_col)) %>%
               summarise(Freq=n(),.groups="drop")
-          }
 
 
 
@@ -614,18 +634,16 @@ SNP <- R6Class(
                        Sample_name=rownames(.)[1])} %>%
             full_join(res_times,by = join_by(AA_effect_short, Freq,Sample_name))
 
-          if (!is.null(metadata_col)){
 
-            res_lineage <- full_join(multiple_lineage,single_lineage,
-                                     by= c("AA_effect_short",metadata_col,"Freq"))
+          res_lineage <- full_join(multiple_lineage,single_lineage,
+                                   by= c("AA_effect_short",metadata_col,"Freq"))
 
-            res_lineage <- filter(lineage,Sample_name %in%
-                                    rownames(snp_all[Matrix::rowSums(snp_all)==0,])) %>%
-              dplyr::select(metadata_col) %>% table() %>% as.data.frame() %>%
-              dplyr::mutate(AA_effect_short="WT") %>%
-              full_join(res_lineage,.,by=c("AA_effect_short", "Freq",metadata_col))
+          res_lineage <- filter(lineage,Sample_name %in%
+                                  rownames(snp_all[Matrix::rowSums(snp_all)==0,])) %>%
+            dplyr::select(metadata_col) %>% table() %>% as.data.frame() %>%
+            dplyr::mutate(AA_effect_short="WT") %>%
+            full_join(res_lineage,.,by=c("AA_effect_short", "Freq",metadata_col))
 
-          }
 
           cat(paste0("remain ",nrow(res_times)," samples with Freq >= ",limit,"\n"))
         }
@@ -638,7 +656,7 @@ SNP <- R6Class(
 
       }
 
-      plottree <- function(res_times,res_lineage,snp_all,size=20){
+      cal_data <- function(res_times,res_lineage,snp_all,size=20){
 
         plot_times <- slice_max(res_times[-1,],Freq,n=size-1,with_ties = F) %>%
           full_join(res_times[1,],by = c("AA_effect_short", "Freq","Sample_name"))
@@ -648,104 +666,127 @@ SNP <- R6Class(
         plot_matrix <- plot_matrix[,Matrix::colSums(plot_matrix)!=0]
 
 
-        tree <- plot_matrix %>%
-          dist() %>%
-          nj() %>% root("WT",edgelabel = T)
-
-        tree$edge.length[tree$edge.length < 0.02] <- 0
-
-        order <- fortify(tree) %>% filter(isTip=="TRUE") %>%
-          dplyr::select(label,y) %>% arrange(y) %>%
-          dplyr::select(AA_effect_short=label) %>%
-          left_join(plot_times[,1:2],by="AA_effect_short")
-
         if (!is.null(res_lineage)){
-          plot_lineage <- filter(res_lineage,AA_effect_short %in% order$AA_effect_short)
+          plot_lineage <- filter(res_lineage,AA_effect_short %in% res_times$AA_effect_short)
 
           lineage_count <- table(lineage[,metadata_col]) %>%
             data.frame() %>%
             setNames(c(metadata_col,"Count"))
 
-          plot_lineage <- plot_lineage %>%
+          total_count <- plot_lineage[,-2] %>% aggregate(Freq~.,.,sum)
+          plot_lineage <- plot_lineage %>% 
             full_join(lineage_count,by=metadata_col) %>%
             dplyr::mutate(Normalized_freq=Freq/Count,
-                          AA_effect_short=factor(AA_effect_short,levels = order$AA_effect_short))
+                          AA_effect_short=factor(AA_effect_short,levels = res_times$AA_effect_short)) %>% 
+            dplyr::select(-Freq,- Count) %>% 
+            pivot_wider(names_from = !!metadata_col,values_from = c(Normalized_freq)) %>% 
+            left_join(total_count) %>% 
+            column_to_rownames("AA_effect_short")
+          plot_lineage[is.na(plot_lineage)] <- 0
+          plot_lineage[-ncol(plot_lineage)] <- vegan::decostand(plot_lineage[-ncol(plot_lineage)],MARGIN=1,"total")
+          plot_heatmap <- plot_matrix %>% as.matrix()
+          plot_heatmap <- plot_heatmap[rownames(plot_lineage),]
+          return(list(plot_heatmap=plot_heatmap,plot_lineage=plot_lineage))
         }
 
 
-        plot_heatmap <- reshape2::melt(plot_matrix %>% as.matrix())
-
-        p1 <-ggtree(tree,size=0.8,col="darkgreen")+
-          geom_tiplab(aes(label=""),color="#E74C3C",align = T)+
-          geom_nodepoint(aes(subset=branch.length!=0),color="orange",alpha=1,size=0.8)+
-          theme(plot.margin = margin(0,-10,0,0))
-
-        p2 <- ggplot(reshape2::melt(plot_matrix %>% as.matrix()),
-                     aes(x=Var2,y=Var1,fill = value))+
-          geom_tile(color="white",width=1,height=1)+
-          theme_minimal()+
-          labs(x=NULL,y=NULL)+
-          theme(axis.text.y = element_blank(),
-                axis.text.x = element_text(angle = 90,hjust = 1,vjust=0.5,
-                                           size = 5,
-                                           margin = margin(b=0)),
-                legend.position = "none",
-                plot.margin = margin(0,0,0,0))+
-          scale_y_discrete(limit=order$AA_effect_short)+
-          scale_fill_gradient(low = "#A6CEE3",high = "#4DAF4A")
-
-
-        if (!is.null(metadata_col)){
-          
-          color_pool <- c("#1F78B4","#FF7F00","#E31A1C","#CAB2D6","#A6CEE3","#FB9A99",
-                          "#33A02C","#cdc0b0","#B2DF8A","#0048ba","#7ac5cd",
-                          "#8D4C6A","#377EB8","#419681","#4DAF4A","#727E76","#984EA3",
-                          "#CB6651","#FFBF19","#FFFF33","#D2AA2D","#A65628","#CE6B73",
-                          "#F781BF")
-          p3 <-ggplot(data=plot_lineage,
-                      aes(x=Normalized_freq,y=AA_effect_short,fill=!!sym(metadata_col)))+
-            geom_bar(stat = "identity",position = "fill") +
-            labs(x="Normalized counts",y=NULL)+
-            theme_minimal()+
-            scale_fill_manual(values=color_pool)+
-            theme(axis.text.y = element_text(size = 8,face = "bold"),
-                  axis.text.x = element_blank(),
-                  panel.grid = element_blank(),
-                  plot.margin = margin(t=0,r=-2,b=0,l=0),
-                  legend.key.size = unit(0.23,"inch"),
-                  legend.text = element_text(size = 6),
-                  legend.title = element_text(size=9))+
-            scale_y_discrete(position = "right",
-                             labels = lapply(order$Freq, function(freq) bquote(italic("n") ~ "=" ~ .(freq))))
-        }
-
-
-
-        plot <- ggdraw()+
-          draw_plot(p1, x = 0, y = 0, width = 0.22, height = 1, scale = 1)+
-          draw_plot(p2, x = 0.22, y = 0, width = 0.22, height = 1, scale = 1)
-
-        if (!is.null(metadata_col)){
-          plot <- plot +
-            draw_plot(p3, x = 0.42, y = 0, width = 0.5, height = 1, scale = 1)
-
-        }
-
-        return(plot)
 
       }
+      
+      final_plot <- function(plot_heatmap, plot_lineage,
+                             heatmap_width=NULL, barplot_width=NULL,
+                             metadata_col) {
+        # 保证行名顺序一致
+        plot_lineage <- plot_lineage[rownames(plot_heatmap), , drop=FALSE]
+        
+        # 设置颜色映射
+        col_fun <- c("0" = "#e0e0e0", "1" = "#1f77b4")
+        color_pool <- c("#1F78B4","#FF7F00","#E31A1C","#CAB2D6","#A6CEE3","#FB9A99",
+                        "#33A02C","#cdc0b0","#B2DF8A","#0048ba","#7ac5cd",
+                        "#8D4C6A","#377EB8","#419681","#4DAF4A","#727E76","#984EA3",
+                        "#CB6651","#FFBF19","#FFFF33","#D2AA2D","#A65628","#CE6B73",
+                        "#F781BF")
+        
+        # 自动计算宽度（如果未指定）
+        if (is.null(heatmap_width)) heatmap_width <- ncol(plot_heatmap) * 0.8
+        if (is.null(barplot_width)) barplot_width <- ncol(plot_lineage) * 2.5
+        
+        # 为图例和边距添加额外空间
+        total_width_cm <- heatmap_width + barplot_width 
+        
+        # 从plot_lineage中提取频数信息
+        freq <- plot_lineage$Freq
+        plot_lineage <- plot_lineage %>% dplyr::select(-Freq)
+        
+        # 创建右侧注释，优化宽度分配
+        ha_right <- rowAnnotation(
+          "Normalized Counts" = anno_barplot(
+            plot_lineage,
+            gp = gpar(fill = color_pool),
+            bar_width = 0.8,
+            border = FALSE,
+            width = unit(barplot_width - 2, "cm")  # 大部分 宽度给柱状图
+          ),
+          Count = anno_text(
+            paste0("n = ", freq),
+            just = "left",
+            gp = gpar(fontsize = 10),
+            location = 0.03,
+            width = unit(2 , "cm")  # 2cm 宽度给文本
+          ),
+          gap = unit(1, "mm")  # 注释之间的间隙
+        )
+        
+        # 创建柱状图图例
+        bar_legend <- Legend(
+          labels = colnames(plot_lineage),
+          title = metadata_col,
+          direction = "vertical",
+          legend_gp = gpar(fill = color_pool),
+          grid_height = unit(3, "mm"),  # 更紧凑的图例项高度
+          grid_width = unit(3, "mm"),   # 更紧凑的图例项宽度
+          labels_gp = gpar(fontsize = 9) # 稍小的图例文字
+        )
+        
+        # 绘制主热图
+        ht <- Heatmap(
+          plot_heatmap,
+          width = unit(heatmap_width, "cm"),
+          col = col_fun,
+          right_annotation = ha_right,
+          cluster_rows = TRUE,
+          show_row_names = FALSE,
+          cluster_columns = FALSE,
+          show_row_dend = TRUE,
+          row_dend_width = unit(1.5, "cm"),
+          show_heatmap_legend = TRUE,
+          border = TRUE,
+          rect_gp = gpar(col = "white"),
+          heatmap_legend_param = list(
+            title = "Mutations"  # 自定义图例标题
+          )
+        )
+        # 绘制热图
+        draw_result <- draw(ht, 
+                            heatmap_legend_side = "left",
+                            annotation_legend_side = "left",
+                            annotation_legend_list = list(bar_legend),
+                            merge_legend = TRUE,
+                            padding = unit(c(2, 2, 2, 2), "mm"))
+      }
 
+ 
       snp_all <- data_clean(locus_tag)
       res <- snp_sort(snp_all=snp_all,limit)
 
-      res_times <- res$res_times
-      res_lineage <- res$res_group
-      size <- ifelse(size > nrow(res_times),nrow(res_times),size)
-
-      plot <- plottree(res_times=res_times,
-                       res_lineage=res_lineage,
+      size <- ifelse(size > nrow(res$res_times),nrow(res$res_times),size)
+  
+      plot_data <- cal_data(res_times=res$res_times,
+                       res_lineage=res$res_group,
                        snp_all=snp_all,
                        size=size)
+
+      plot <- final_plot(plot_data$plot_heatmap,plot_data$plot_lineage,metadata_col = metadata_col)
 
       # ggsave("tree.png",plot,dpi=600,
       #        width = 14.6*max(size,20)/20,
@@ -754,12 +795,14 @@ SNP <- R6Class(
 
       print(plot)
 
-      res_times <-res_times %>% dplyr::select(-Sample_name)
+      res_times <- res$res_times %>% dplyr::select(-Sample_name)
 
       return(list(plot=plot,
+                  plot_data=plot_data,
                   res_times=res_times,
-                  res_lineage=res_lineage,
-                  max_size=nrow(res_times)))
+                  res_lineage=res$res_group,
+                  max_size=nrow(res_times)
+                  ))
     },
 
     #' MutNumPlot
